@@ -235,6 +235,22 @@ jobs:
 
           gcloud builds submit --tag ${{ env.IMAGE_NAME }} .
 
+      - name: Grant Cloud Run Runtime Permissions
+        run: |
+          # The app runs as the default compute service account, which has no roles by default.
+          # Cloud mode needs Vertex AI (Vector Search index/endpoint, embeddings) and Cloud Storage (chunk text, uploads, logs).
+          PROJECT_NUMBER=$(gcloud projects describe ${{ env.PROJECT_ID }} --format="value(projectNumber)")
+
+          echo "Granting roles/aiplatform.user to the Cloud Run service account..."
+          gcloud projects add-iam-policy-binding ${{ env.PROJECT_ID }} \
+            --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+            --role="roles/aiplatform.user" --condition=None >/dev/null
+
+          echo "Granting roles/storage.objectAdmin to the Cloud Run service account..."
+          gcloud projects add-iam-policy-binding ${{ env.PROJECT_ID }} \
+            --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+            --role="roles/storage.objectAdmin" --condition=None >/dev/null
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE_NAME }} \
