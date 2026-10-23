@@ -196,6 +196,14 @@ jobs:
           # Passed as an environment variable (not pasted into the script text) so the key never appears in the shell command
           RAW_GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
+          # Editor can create secrets but never set their IAM policy (secretmanager.secrets.setIamPolicy).
+          # The deployer's projectIamAdmin role lets it grant itself Secret Manager Admin, which covers that.
+          echo "Granting Secret Manager Admin to the deployer service account..."
+          DEPLOYER_SA=$(gcloud config get account 2>/dev/null)
+          gcloud projects add-iam-policy-binding ${{ env.PROJECT_ID }} \
+            --member="serviceAccount:${DEPLOYER_SA}" \
+            --role="roles/secretmanager.admin" --condition=None >/dev/null
+
           # Create secret container if it doesn't exist
           if ! gcloud secrets describe GOOGLE_API_KEY >/dev/null 2>&1; then
             echo "Creating GOOGLE_API_KEY secret container..."
