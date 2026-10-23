@@ -222,6 +222,17 @@ jobs:
       # --- Phase 5: Build & Deploy Application ---
       - name: Build and Push Docker Image
         run: |
+          # Cloud Build runs as the default compute service account, which newer projects no longer
+          # make Editor automatically. Give it what a build needs: read the uploaded source, push the image, write logs.
+          echo "Granting Cloud Build permissions to the build service account..."
+          PROJECT_NUMBER=$(gcloud projects describe ${{ env.PROJECT_ID }} --format="value(projectNumber)")
+          gcloud projects add-iam-policy-binding ${{ env.PROJECT_ID }} \
+            --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+            --role="roles/cloudbuild.builds.builder" --condition=None >/dev/null
+
+          echo "Waiting 60 seconds for the IAM change to propagate..."
+          sleep 60
+
           gcloud builds submit --tag ${{ env.IMAGE_NAME }} .
 
       - name: Deploy to Cloud Run
