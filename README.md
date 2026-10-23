@@ -33,7 +33,7 @@ This README is the short version. The [`docs/`](docs/README.md) folder explains 
 | Practise | [Exercises](docs/16-exercises.md) · [runnable examples](docs/examples/README.md) |
 | Fix an error | [Troubleshooting](docs/18-troubleshooting.md) |
 
-> **Is Terraform used?** No. The cloud is set up by GitHub Actions running `gcloud` commands (see [docs/14](docs/14-provisioning-and-github-actions.md)).
+> **Is Terraform used?** No. The cloud is set up by GitHub Actions running `gcloud` commands (see [docs/14](docs/14-provisioning-and-github-actions.md))
 
 ---
 
